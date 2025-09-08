@@ -59,3 +59,7 @@ coverage.xml
 #conda
 .conda/
 .condarc
+
+# personal resources
+res/map/
+res/img/
