@@ -1,0 +1,12 @@
+name: diceart
+dependencies:
+  - python=3.12
+  - numpy
+  - pillow
+  - opencv
+  - click
+  
+  # If you need pip packages, add:
+  # - pip
+  # - pip:
+  #     - some-pip-package
