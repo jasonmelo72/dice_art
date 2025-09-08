@@ -26,6 +26,26 @@ class DiceArt:
         self.grid_size = None  # Grid size in (width, height) in dice units
         self.grid_size_inches = None  # Grid size (width, height) in inches
 
+    def create_from_image(self, image_path: str, output_name: str, grid_size_inches: tuple[int, int], dice_size: int = 16) -> None:
+        """Convenience method to load and process an image in one step.
+
+        This method combines loading an image from a specified path and processing it
+        to generate the dice art representation, saving both preview and mapping files.
+
+        Args:
+            image_path (str): The file path to the image to be loaded and processed.
+            output_name (str): Base name for the output files (will append _preview.png and _mapping.txt)
+            grid_size_inches (tuple[int, int]): The desired (width, height) of the output grid in inches.
+
+        Returns:
+            None
+        """
+        self.load_image(image_path)
+        self.calculate_dimensions_from_grid_size(grid_size_inches, dice_size)
+        self.process_image()
+        self.save_preview(output_name)
+        self.save_dice_mapping(output_name)
+
     def load_image(self, image_path: str) -> None:
         """Load an image from the specified path.
 
@@ -172,6 +192,9 @@ class DiceArt:
         Raises:
             AttributeError: If no image has been processed yet (self.processed_image is None)
         """
+        if self.grid_size is None:
+            raise ValueError("Grid size must be set before saving preview. Process an image first.")
+        output_path = f"/res/img/{output_path}_{self.grid_size[0]}x{self.grid_size[1]}in_{self.dice_size}mm_preview.png"
         if self.processed_image:
             self.processed_image.save(output_path)
 
@@ -191,6 +214,9 @@ class DiceArt:
         Raises:
             RuntimeError: If dice_values has not been calculated yet (is None)
         """
+        if self.grid_size is None:
+            raise ValueError("Grid size must be set before saving preview. Process an image first.")
+        output_path = f"/res/map/{output_path}_{self.grid_size[0]}x{self.grid_size[1]}in_{self.dice_size}mm_mapping.txt"
         if self.dice_values is not None:
             #np.savetxt(output_path, self.dice_values, fmt='%d', delimiter=' ')
             dice_grid = self.get_dice_grid(show_coordinates=True)
@@ -246,28 +272,6 @@ class DiceArt:
             result = [" ".join(str(x) for x in row) for row in self.dice_values]
             
         return "\n".join(result)
-    
-    def create_from_image(self, image_path: str, output_name: str, grid_size_inches: tuple[int, int], dice_size: int = 16) -> None:
-        """Convenience method to load and process an image in one step.
-
-        This method combines loading an image from a specified path and processing it
-        to generate the dice art representation, saving both preview and mapping files.
-
-        Args:
-            image_path (str): The file path to the image to be loaded and processed.
-            output_name (str): Base name for the output files (will append _preview.png and _mapping.txt)
-            grid_size_inches (tuple[int, int]): The desired (width, height) of the output grid in inches.
-
-        Returns:
-            None
-        """
-        self.load_image(image_path)
-        self.dice_size = dice_size
-        self.grid_size = self.calculate_dimensions_from_grid_size(grid_size_inches, dice_size)
-        self.process_image()
-        output_name = f"{output_name}_{self.grid_size[0]}x{self.grid_size[1]}in_{self.dice_size}mm"
-        self.save_preview(f"res/img/{output_name}_preview.png")
-        self.save_dice_mapping(f"res/map/{output_name}_mapping.txt")
 
     def calculate_dimensions_from_grid_size(self, grid_size_inches: tuple[int, int], dice_size: int = 16) -> tuple[int, int]:
         """Calculate pixel dimensions based on grid size and cell size.
@@ -287,7 +291,8 @@ class DiceArt:
         self.grid_size_inches = grid_size_inches
         width, height = self.grid_size_inches
         size_in_inches = self.dice_size / 25.4  # Convert mm to inches
-        return (math.trunc(width / size_in_inches), math.trunc(height / size_in_inches))
+        self.grid_size = (math.trunc(width / size_in_inches), math.trunc(height / size_in_inches))
+        return self.grid_size
     
 if __name__ == "__main__":
     # Example usage
