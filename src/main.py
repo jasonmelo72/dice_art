@@ -2,6 +2,8 @@ import numpy as np
 import math
 from PIL import Image
 from typing import Optional
+from fpdf import FPDF
+from fpdf.enums import XPos, YPos
 
 class DiceArt:
     def __init__(self, image_path: Optional[str] = None) -> None:
@@ -192,9 +194,9 @@ class DiceArt:
         Raises:
             AttributeError: If no image has been processed yet (self.processed_image is None)
         """
-        if self.grid_size is None:
+        if self.grid_size_inches is None:
             raise ValueError("Grid size must be set before saving preview. Process an image first.")
-        output_path = f"res/img/{output_path}_{self.grid_size[0]}x{self.grid_size[1]}in_{self.dice_size}mm_preview.png"
+        output_path = f"res/img/{output_path}_{self.grid_size_inches[0]}x{self.grid_size_inches[1]}in_{self.dice_size}mm_preview.png"
         if self.processed_image:
             self.processed_image.save(output_path)
 
@@ -214,14 +216,32 @@ class DiceArt:
         Raises:
             RuntimeError: If dice_values has not been calculated yet (is None)
         """
-        if self.grid_size is None:
+        if self.grid_size_inches is None or self.grid_size is None:
             raise ValueError("Grid size must be set before saving preview. Process an image first.")
-        output_path = f"res/map/{output_path}_{self.grid_size[0]}x{self.grid_size[1]}in_{self.dice_size}mm_mapping.txt"
+        output_path = f"res/map/{output_path}_{self.grid_size_inches[0]}x{self.grid_size_inches[1]}in_{self.dice_size}mm_mapping.pdf"
         if self.dice_values is not None:
             #np.savetxt(output_path, self.dice_values, fmt='%d', delimiter=' ')
             dice_grid = self.get_dice_grid(show_coordinates=True)
-            with open(output_path, 'w') as f:
-                f.write(dice_grid)
+
+            # Create PDF object
+            margin = 0.5 # in millimeters
+            font_size = 10  # in points
+
+            pdf = FPDF() #, unit='in', format=(page_width, page_height))
+            pdf.set_font('Courier', size=font_size)
+            #pdf.set_margins(left=margin, top=margin, right=margin)
+            
+            char_width = pdf.get_string_width('A') # Width of a single character in the current font
+            page_width = self.grid_size[0] * 4 * char_width * 2*margin
+            page_height = self.grid_size[1] * 5 * 2*margin
+            pdf.add_page(orientation='P', format=(page_width, page_height))
+            
+            # Split text into lines and add to PDF
+            for line in dice_grid.split('\n'):
+                pdf.cell(0, 4, text=line, new_x=XPos.LMARGIN, new_y=YPos.NEXT, align='L')
+                
+            # Save PDF
+            pdf.output(output_path.replace('.txt', '.pdf'))
 
     def get_dice_grid(self, show_coordinates: bool = True) -> str:
         """Return the dice values as a formatted string grid with optional coordinates.
@@ -258,14 +278,14 @@ class DiceArt:
         
         if show_coordinates:
             # Add column numbers header
-            header = "    " + " ".join(str(i+1).rjust(2) for i in range(cols))
+            header = "      " + " ".join(str(i+1).rjust(2) for i in range(cols))
             result.append(header)
-            separator = "  | " + "---"*cols
+            separator = "    | " + "---"*cols
             result.append(separator)
             
             # Add each row with row number
             for i, row in enumerate(self.dice_values):
-                row_str = f"{i+1:2d}| " + " ".join(str(x).rjust(2) for x in row)
+                row_str = f"{i+1:04d}| " + " ".join(str(x).rjust(2) for x in row)
                 result.append(row_str)
         else:
             # Original format without coordinates
@@ -297,4 +317,4 @@ class DiceArt:
 if __name__ == "__main__":
     # Example usage
     dice_art = DiceArt()
-    dice_art.create_from_image("res/img/test_image.png", "output", (10, 10), dice_size=16)
+    dice_art.create_from_image("res/img/DSC04509.jpg", "output", (12, 12), dice_size=5)

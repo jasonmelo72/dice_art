@@ -6,7 +6,7 @@ dependencies:
   - opencv
   - click
   
-  # If you need pip packages, add:
-  # - pip
-  # - pip:
-  #     - some-pip-package
+
+   - pip
+   - pip:
+      - fpdf2
