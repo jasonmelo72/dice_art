@@ -194,7 +194,7 @@ class DiceArt:
         """
         if self.grid_size is None:
             raise ValueError("Grid size must be set before saving preview. Process an image first.")
-        output_path = f"/res/img/{output_path}_{self.grid_size[0]}x{self.grid_size[1]}in_{self.dice_size}mm_preview.png"
+        output_path = f"res/img/{output_path}_{self.grid_size[0]}x{self.grid_size[1]}in_{self.dice_size}mm_preview.png"
         if self.processed_image:
             self.processed_image.save(output_path)
 
@@ -216,7 +216,7 @@ class DiceArt:
         """
         if self.grid_size is None:
             raise ValueError("Grid size must be set before saving preview. Process an image first.")
-        output_path = f"/res/map/{output_path}_{self.grid_size[0]}x{self.grid_size[1]}in_{self.dice_size}mm_mapping.txt"
+        output_path = f"res/map/{output_path}_{self.grid_size[0]}x{self.grid_size[1]}in_{self.dice_size}mm_mapping.txt"
         if self.dice_values is not None:
             #np.savetxt(output_path, self.dice_values, fmt='%d', delimiter=' ')
             dice_grid = self.get_dice_grid(show_coordinates=True)
