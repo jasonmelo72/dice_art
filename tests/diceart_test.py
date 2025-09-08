@@ -1,7 +1,7 @@
 import pytest
 from src.main import DiceArt
 
-TEST_IMAGE="C:/Users/jason/OneDrive/Pictures/IMG_6622.jpg"
+TEST_IMAGE="res/img/test_image.png"
 
 @pytest.fixture(scope="session")
 def dice_art_instance():
@@ -29,3 +29,17 @@ def test_convert_to_grayscale(dice_art_instance):
     grey_img = dice_art_instance.convert_to_grayscale()
     # Check if image mode is "L" (grayscale)
     assert grey_img.mode == "L"
+
+@pytest.mark.parametrize("input_value, expected_value", [((10,10), (15,15)), ((20,20), (31,31)), ((30,30),(47,47)), ((40,40),(63,63))])
+def test_calculate_dimensions_from_grid_size(dice_art_instance, input_value, expected_value):
+    grid_size = input_value
+    dice_art_instance.calculate_dimensions_from_grid_size(grid_size)
+    assert dice_art_instance.grid_size_inches == grid_size
+    assert dice_art_instance.grid_size == expected_value
+
+def test_process_image_and_dice_values(dice_art_instance):
+    dice_art_instance.calculate_dimensions_from_grid_size((10,10))
+    dice_art_instance.process_image()
+    assert dice_art_instance.processed_image is not None
+    assert dice_art_instance.dice_values is not None
+    assert dice_art_instance.dice_values.shape == (15, 15)  # Based on previous test, (10,10) grid should yield (15,15) dice values

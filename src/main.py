@@ -297,4 +297,4 @@ class DiceArt:
 if __name__ == "__main__":
     # Example usage
     dice_art = DiceArt()
-    dice_art.create_from_image("res/img/DSC04509.jpg", "output", (12, 12), dice_size=5)
+    dice_art.create_from_image("res/img/test_image.png", "output", (10, 10), dice_size=16)
